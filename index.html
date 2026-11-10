@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시그널 클린룸 (Signal CleanRoom)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Noto Sans KR -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f4f9;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(224, 242, 254, 0.8) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(254, 243, 199, 0.7) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(238, 242, 255, 0.8) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .cloud-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(14px);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 12px 32px -4px rgba(148, 163, 184, 0.15), 0 4px 12px -2px rgba(148, 163, 184, 0.08);
+            border-radius: 2rem;
+        }
+        .cloud-btn {
+            border-radius: 9999px;
+            box-shadow: 0 6px 20px -2px rgba(56, 189, 248, 0.25);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .cloud-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 25px -2px rgba(56, 189, 248, 0.35);
+        }
+        .cloud-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        @keyframes float-slow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        .animate-float {
+            animation: float-slow 4s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+            animation: float-slow 5s ease-in-out 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="text-slate-700 min-h-screen flex flex-col justify-between selection:bg-sky-200">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-sky-100/60">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-18 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="switchTab('dashboard')">
+                <div class="w-11 h-11 rounded-3xl bg-gradient-to-tr from-sky-400 via-sky-300 to-indigo-300 flex items-center justify-center text-white shadow-lg shadow-sky-200/80 group-hover:scale-105 transition-transform duration-300">
+                    <i class="fa-solid fa-cloud text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <h1 class="font-bold text-lg text-slate-800 leading-tight">시그널 클린룸</h1>
+                        <span class="text-[10px] bg-sky-100 text-sky-600 px-2 py-0.5 rounded-full font-bold">포근한 구름</span>
+                    </div>
+                    <p class="text-xs text-sky-500 font-medium">말랑말랑 따뜻한 우리들의 안전 구름터</p>
+                </div>
+            </div>
+            
+            <!-- Quick Alert Button -->
+            <button onclick="switchTab('report')" class="cloud-btn bg-gradient-to-r from-rose-400 to-pink-400 text-white text-xs sm:text-sm font-bold px-5 py-2.5 flex items-center gap-2">
+                <i class="fa-solid fa-heart animate-bounce"></i>
+                <span>비밀 헬프 시그널</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex-grow w-full">
+
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-2 border-b border-sky-100/80 mb-6 overflow-x-auto hide-scrollbar pb-2">
+            <button id="tab-btn-dashboard" onclick="switchTab('dashboard')" class="tab-btn py-2.5 px-5 font-bold text-sm rounded-full transition-all duration-300 border-2 border-sky-400 text-sky-600 bg-sky-50/80 shadow-sm">
+                <i class="fa-solid fa-cloud-sun mr-1.5"></i> 구름 대시보드
+            </button>
+            <button id="tab-btn-report" onclick="switchTab('report')" class="tab-btn py-2.5 px-5 font-semibold text-sm rounded-full transition-all duration-300 border-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-white/60">
+                <i class="fa-solid fa-shield-cat mr-1.5"></i> 익명 SOS 제보
+            </button>
+            <button id="tab-btn-cheer" onclick="switchTab('cheer')" class="tab-btn py-2.5 px-5 font-semibold text-sm rounded-full transition-all duration-300 border-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-white/60">
+                <i class="fa-solid fa-heart-pulse mr-1.5"></i> 포근 마음의 벽
+            </button>
+            <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="tab-btn py-2.5 px-5 font-semibold text-sm rounded-full transition-all duration-300 border-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-white/60">
+                <i class="fa-solid fa-sparkles mr-1.5"></i> 포근 마음 약속
+            </button>
+        </div>
+
+        <!-- 1. DASHBOARD TAB -->
+        <section id="view-dashboard" class="tab-content space-y-6">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-sky-300 via-sky-400 to-indigo-300 rounded-[2.5rem] p-7 sm:p-9 text-white shadow-xl shadow-sky-200/50 relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-flex items-center gap-1.5 px-3.5 py-1 bg-white/30 backdrop-blur-md rounded-full text-xs font-bold mb-3 border border-white/40">
+                        <i class="fa-solid fa-cloud-bolt text-amber-200"></i> 안심 보호 공간
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mb-3 leading-snug">몽글몽글 따뜻한 작은 용기가<br>우리 교실을 맑게 변화시킵니다.</h2>
+                    <p class="text-sky-50 text-sm sm:text-base mb-6 font-medium leading-relaxed">24시간 이어지는 사이버 폭력과 은밀한 따돌림, 혼자 슬퍼하지 마세요. 구름처럼 포근하게 감싸주는 100% 익명 보호 시스템이 언제나 함께합니다.</p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="switchTab('report')" class="cloud-btn bg-white text-sky-600 font-bold px-6 py-3 text-sm hover:bg-sky-50">
+                            <i class="fa-solid fa-paper-plane mr-1.5 text-rose-400"></i> 시그널 보내기
+                        </button>
+                        <button onclick="switchTab('cheer')" class="cloud-btn bg-sky-500/40 hover:bg-sky-500/60 text-white font-bold px-6 py-3 text-sm backdrop-blur-md border border-white/30">
+                            <i class="fa-solid fa-hand-holding-heart mr-1.5 text-amber-200"></i> 따뜻한 한마디
+                        </button>
+                    </div>
+                </div>
+                <!-- Decorative Cloud Icons -->
+                <div class="absolute -right-6 -bottom-8 opacity-30 text-white pointer-events-none animate-float">
+                    <i class="fa-solid fa-cloud text-[220px]"></i>
+                </div>
+                <div class="absolute right-36 top-4 opacity-20 text-white pointer-events-none animate-float-delayed">
+                    <i class="fa-solid fa-cloud-sun text-[130px]"></i>
+                </div>
+            </div>
+
+            <!-- Notice & Ethics Banner -->
+            <div class="bg-amber-50/90 border-2 border-amber-200/80 rounded-3xl p-5 flex items-start gap-3.5 text-amber-900 text-sm shadow-sm backdrop-blur-sm">
+                <div class="w-8 h-8 rounded-full bg-amber-200/60 flex items-center justify-center text-amber-700 shrink-0 mt-0.5">
+                    <i class="fa-solid fa-sun text-base"></i>
+                </div>
+                <div class="leading-relaxed">
+                    <span class="font-bold text-amber-900">시그널 클린룸 윤리 수칙:</span> 모든 익명 시그널은 포근하고 철저하게 보호되며 전문 상담 선생님에게만 전달됩니다. 타인을 비방하거나 거짓 소문을 적는 일 없이 서로를 존중해 주세요 ☁️
+                </div>
+            </div>
+
+            <!-- Action Grid Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div onclick="switchTab('report')" class="cloud-card p-6 cursor-pointer hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="w-13 h-13 rounded-2xl bg-rose-100/80 text-rose-500 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-shield-cat"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-1.5">비밀 헬프 시그널</h3>
+                    <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">단톡방 따돌림이나 캡처 정황을 안심하고 전달하세요. 2차 피해 방지 지킴이가 가동됩니다.</p>
+                </div>
+
+                <div onclick="switchTab('cheer')" class="cloud-card p-6 cursor-pointer hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="w-13 h-13 rounded-2xl bg-emerald-100/80 text-emerald-500 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-cloud-meatball"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-1.5">포근 마음의 벽</h3>
+                    <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">소외감을 느끼는 친구를 위해 푹신한 구름 쿠션 같은 응원의 익명 메시지를 남겨주세요.</p>
+                </div>
+
+                <div onclick="switchTab('quiz')" class="cloud-card p-6 cursor-pointer hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="w-13 h-13 rounded-2xl bg-indigo-100/80 text-indigo-500 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-rainbow"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-1.5">포근 마음 약속</h3>
+                    <p class="text-slate-500 text-xs sm:text-sm leading-relaxed">혹시 나도 모르게 방관하지는 않았는지 마음을 점검하고 따뜻한 디지털 라이프를 다짐해요.</p>
+                </div>
+            </div>
+
+            <!-- Recent Cheer Feed Preview -->
+            <div class="cloud-card p-6 sm:p-7">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-moon text-sky-400"></i> 포근함을 나누는 실시간 온기
+                    </h3>
+                    <button onclick="switchTab('cheer')" class="text-xs text-sky-600 font-bold hover:underline">전체보기 &rarr;</button>
+                </div>
+                <div id="preview-cheer-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- Dynamic Loading -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. ANONYMOUS REPORT TAB -->
+        <section id="view-report" class="tab-content hidden space-y-6">
+            <div class="cloud-card p-6 sm:p-9 max-w-2xl mx-auto">
+                <div class="border-b border-sky-100 pb-4 mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-rose-400"></i> 100% 비밀 보장 헬프 시그널
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1.5">보내주신 이야기는 폭푹우 속 우산처럼 작성자를 포근히 지켜줍니다. IP나 개인정보는 저장되지 않습니다.</p>
+                </div>
+
+                <form id="reportForm" onsubmit="handleReportSubmit(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">제보자 유형</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center gap-2.5 bg-sky-50/50 border-2 border-sky-100 p-3.5 rounded-2xl cursor-pointer hover:bg-sky-50 transition">
+                                <input type="radio" name="reporterType" value="victim" checked class="text-sky-500 focus:ring-sky-400">
+                                <span class="text-xs sm:text-sm font-semibold text-slate-700">내가 도움을 받고 싶어요</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 bg-sky-50/50 border-2 border-sky-100 p-3.5 rounded-2xl cursor-pointer hover:bg-sky-50 transition">
+                                <input type="radio" name="reporterType" value="bystander" class="text-sky-500 focus:ring-sky-400">
+                                <span class="text-xs sm:text-sm font-semibold text-slate-700">친구 상황이 걱정돼요</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">발생 채널/장소</label>
+                        <select id="reportChannel" class="w-full bg-slate-50/80 border-2 border-sky-100 rounded-2xl p-3.5 text-xs sm:text-sm focus:outline-none focus:border-sky-400 text-slate-700 font-medium">
+                            <option value="단체 채팅방(카카오톡 등)">단체 채팅방 (카카오톡, 라인 등)</option>
+                            <option value="익명 게시판/앱(에타, 페북 등)">익명 게시판 / SNS 계정</option>
+                            <option value="인스타그램/틱톡 DMs">인스타그램 / 틱톡 DM</option>
+                            <option value="게임 내 채팅 및 음성">온라인 게임 내 채팅/음성</option>
+                            <option value="기타 은밀한 소외/따돌림">기타 은밀한 소외 및 언어폭력</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">상황을 적어주세요</label>
+                        <textarea id="reportContent" rows="4" required placeholder="억지로 채팅방에 초대를 받았거나 일부러 제외하고 조롱하는 등 어떤 상황인지 편하게 말해주세요. 안전하게 들어드릴게요." class="w-full bg-slate-50/80 border-2 border-sky-100 rounded-2xl p-3.5 text-xs sm:text-sm focus:outline-none focus:border-sky-400 text-slate-700 font-medium"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">증거 사진 첨부 (선택)</label>
+                        <div class="border-2 border-dashed border-sky-200 rounded-2xl p-5 text-center bg-sky-50/40 hover:bg-sky-50 transition cursor-pointer" onclick="document.getElementById('evidenceFile').click()">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-400 mb-1"></i>
+                            <p class="text-xs text-slate-500 font-medium">클릭해서 캡처 사진을 올려주세요</p>
+                            <span id="fileNameDisplay" class="text-xs font-bold text-sky-600 block mt-1.5"></span>
+                            <input type="file" id="evidenceFile" accept="image/*" class="hidden" onchange="showFileName(this)">
+                        </div>
+                    </div>
+
+                    <div class="bg-sky-50 border border-sky-200/80 p-3.5 rounded-2xl text-xs text-sky-800 flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-sky-500"></i>
+                        <span>제출 시 암호화 보호 처리되며, 2차 피해가 생기지 않도록 비밀 개입합니다.</span>
+                    </div>
+
+                    <button type="submit" class="cloud-btn w-full bg-gradient-to-r from-rose-400 to-pink-400 hover:from-rose-500 hover:to-pink-500 text-white font-bold py-3.5 text-sm">
+                        안전 구름 시그널 전송하기
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 3. CHEER WALL TAB -->
+        <section id="view-cheer" class="tab-content hidden space-y-6">
+            <div class="cloud-card p-6 sm:p-8">
+                <h2 class="text-xl font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-heart text-rose-400"></i> 포근한 연대의 구름 벽 (Warm Wall)
+                </h2>
+                <p class="text-xs text-slate-500 mb-6">친구가 혼자가 아니라는 걸 말해주세요. 몽글몽글 따뜻한 언어로 다정하게 감싸줍니다.</p>
+
+                <!-- Input box -->
+                <form id="cheerForm" onsubmit="handleCheerSubmit(event)" class="mb-8 bg-sky-50/60 border-2 border-sky-100 p-4 sm:p-5 rounded-3xl space-y-3">
+                    <div class="flex flex-col sm:flex-row gap-2.5">
+                        <input type="text" id="cheerAuthor" placeholder="닉네임 (예: 포근한구름)" required class="sm:w-1/3 bg-white border-2 border-sky-100 rounded-2xl p-2.5 text-xs sm:text-sm font-medium focus:outline-none focus:border-sky-400">
+                        <select id="cheerTag" class="sm:w-2/3 bg-white border-2 border-sky-100 rounded-2xl p-2.5 text-xs sm:text-sm font-medium focus:outline-none focus:border-sky-400">
+                            <option value="☁️ 포근한 위로">☁️ 포근한 위로와 지지</option>
+                            <option value="🛡️ 나부터 방관 방지">🛡️ 나부터 방관하지 않을게</option>
+                            <option value="🌟 너는 빛나는 존재">🌟 차이를 인정하는 포용</option>
+                        </select>
+                    </div>
+                    <textarea id="cheerText" rows="2" required placeholder="따뜻한 마음을 남겨주세요... (예: 네 잘못이 아니야, 언제든 힘이 되어줄게!)" class="w-full bg-white border-2 border-sky-100 rounded-2xl p-3 text-xs sm:text-sm font-medium focus:outline-none focus:border-sky-400"></textarea>
+                    <div class="flex justify-end">
+                        <button type="submit" class="cloud-btn bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-5 py-2.5">
+                            <i class="fa-solid fa-paper-plane mr-1"></i> 응원 구름 띄우기
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Cards Grid -->
+                <div id="cheer-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                    <!-- Dynamic Insertion -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. SELF DIAGNOSIS & COMMITMENT TAB -->
+        <section id="view-quiz" class="tab-content hidden space-y-6">
+            <div class="cloud-card p-6 sm:p-9 max-w-2xl mx-auto">
+                <h2 class="text-xl font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-sparkles text-indigo-500"></i> 디지털 마음 점검 & 포근 약속
+                </h2>
+                <p class="text-xs text-slate-500 mb-6">나의 언어 습관과 태도를 편안하게 돌아보고, 서로를 존중하는 따뜻한 교실을 약속해요.</p>
+
+                <div id="quizContainer" class="space-y-6">
+                    <!-- Quiz Item 1 -->
+                    <div class="border-b border-sky-100 pb-4">
+                        <p class="font-semibold text-sm text-slate-800 mb-3">Q1. 단체 채팅방에서 특정 친구를 은근히 제외하거나 비하하는 글을 보았을 때 어떻게 하나요?</p>
+                        <div class="space-y-2.5 text-xs">
+                            <label class="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-sky-50/50 cursor-pointer transition">
+                                <input type="radio" name="q1" value="1" class="text-sky-500">
+                                <span>타깃이 될까 두려워 모른 척 가만히 있거나 같이 웃는다.</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-sky-50/50 cursor-pointer transition">
+                                <input type="radio" name="q1" value="2" class="text-sky-500">
+                                <span>불편하지만 말리지 못하고 채팅방을 조용히 나간다.</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-sky-50/50 cursor-pointer transition">
+                                <input type="radio" name="q1" value="3" class="text-sky-500">
+                                <span>피해 친구에게 개인적으로 다가가 안부를 묻고, 익명 헬프 시그널에 알린다.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Item 2 -->
+                    <div class="border-b border-sky-100 pb-4">
+                        <p class="font-semibold text-sm text-slate-800 mb-3">Q2. 친구에 관한 거짓 소문이나 비하 표현이 들어간 글을 보았을 때 나의 행동은?</p>
+                        <div class="space-y-2.5 text-xs">
+                            <label class="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-sky-50/50 cursor-pointer transition">
+                                <input type="radio" name="q2" value="1" class="text-sky-500">
+                                <span>흥미로워서 다른 사람이나 단톡방에 퍼뜨린다.</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-sky-50/50 cursor-pointer transition">
+                                <input type="radio" name="q2" value="2" class="text-sky-500">
+                                <span>나와 상관없다고 생각하고 그냥 지나친다.</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 hover:bg-sky-50/50 cursor-pointer transition">
+                                <input type="radio" name="q2" value="3" class="text-sky-500">
+                                <span>전달을 바로 차단하고 거짓 소문 역시 폭력임을 상기시킨다.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button onclick="calculateQuiz()" class="cloud-btn w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3.5 text-sm">
+                        나의 마음 결과 확인하기
+                    </button>
+                </div>
+
+                <!-- Result Box (Hidden by default) -->
+                <div id="quizResult" class="hidden mt-6 p-6 rounded-3xl bg-indigo-50/80 border-2 border-indigo-100 text-center space-y-4">
+                    <h3 class="font-extrabold text-indigo-900 text-base" id="resultTitle"></h3>
+                    <p class="text-xs text-indigo-700 leading-relaxed" id="resultDesc"></p>
+                    
+                    <div class="pt-4 border-t border-indigo-100/80">
+                        <h4 class="font-bold text-slate-800 text-xs mb-3">☁️ 우리가 만드는 포근한 디지털 약속</h4>
+                        <ul class="text-xs text-slate-600 text-left space-y-2 max-w-md mx-auto">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-cloud-check text-sky-400"></i> 익명 뒤에 숨지 않고 타인을 상처주지 않기</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-cloud-check text-sky-400"></i> 은밀한 따돌림을 모른 척 방관하지 않고 손 내밀기</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-cloud-check text-sky-400"></i> 서로의 다름을 포용하고 존중하는 교실 가꾸기</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/60 border-t border-sky-100/60 py-6 text-center text-xs text-slate-400 backdrop-blur-sm">
+        <div class="max-w-5xl mx-auto px-4">
+            <p class="font-bold text-slate-600 mb-1">시그널 클린룸 (Signal CleanRoom) - 구름처럼 포근한 교실 문화</p>
+            <p>방관자 없는 정의롭고 따뜻한 학교 공동체를 응원합니다.</p>
+            <p class="mt-2 text-slate-400">청소년 전화 1388 | 학교폭력 신고센터 117</p>
+        </div>
+    </footer>
+
+    <!-- Modal Notification -->
+    <div id="customModal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-white/95 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl border-2 border-white space-y-4 animate-float">
+            <div id="modalIcon" class="w-14 h-14 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-cloud"></i>
+            </div>
+            <h3 id="modalTitle" class="font-bold text-slate-800 text-lg">알림</h3>
+            <p id="modalMessage" class="text-xs text-slate-600 leading-relaxed"></p>
+            <button onclick="closeModal()" class="cloud-btn w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 text-xs">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        // Mock Data Storage for Demo
+        let cheerPosts = [
+            { id: 1, author: "포근한 구름", tag: "☁️ 포근한 위로", text: "너는 혼자가 아니야! 어떤 나쁜 말도 네 빛나는 가치를 덮을 순 없어.", likes: 24 },
+            { id: 2, author: "무지개 수호자", tag: "🛡️ 나부터 방관 방지", text: "단톡방 조롱에 침묵하지 않을게. 용기 있게 네 편이 되어줄게!", likes: 31 },
+            { id: 3, author: "햇살 학급", tag: "🌟 너는 빛나는 존재", text: "익명이라는 이름 뒤에서 상처 주지 말고, 서로의 차이를 다정하게 안아주자.", likes: 18 }
+        ];
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-sky-400', 'text-sky-600', 'bg-sky-50/80', 'shadow-sm');
+                btn.classList.add('border-transparent', 'text-slate-500');
+            });
+
+            const targetView = document.getElementById(`view-${tabId}`);
+            const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+
+            if (targetView) targetView.classList.remove('hidden');
+            if (targetBtn) {
+                targetBtn.classList.remove('border-transparent', 'text-slate-500');
+                targetBtn.classList.add('border-sky-400', 'text-sky-600', 'bg-sky-50/80', 'shadow-sm');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Cheer Cards
+        function renderCheerPosts() {
+            const container = document.getElementById('cheer-cards-container');
+            const previewContainer = document.getElementById('preview-cheer-list');
+
+            if (container) {
+                container.innerHTML = cheerPosts.map(post => `
+                    <div class="bg-white/90 border border-sky-100 p-4.5 rounded-3xl shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11px] font-bold px-3 py-1 rounded-full bg-sky-100/80 text-sky-700">${post.tag}</span>
+                                <span class="text-xs text-slate-400 font-medium">${post.author}</span>
+                            </div>
+                            <p class="text-xs text-slate-700 leading-relaxed mb-4 font-medium">${escapeHtml(post.text)}</p>
+                        </div>
+                        <div class="flex items-center justify-end">
+                            <button onclick="likePost(${post.id})" class="cloud-btn text-xs text-rose-500 hover:text-rose-600 font-semibold flex items-center gap-1.5 bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
+                                <i class="fa-solid fa-heart"></i> <span>${post.likes}</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            if (previewContainer) {
+                previewContainer.innerHTML = cheerPosts.slice(0, 2).map(post => `
+                    <div class="bg-white/80 p-3.5 rounded-2xl border border-sky-100 text-xs">
+                        <div class="flex justify-between font-bold text-slate-700 mb-1">
+                            <span class="text-sky-500">${post.tag}</span>
+                            <span class="text-slate-400 text-[10px]">${post.author}</span>
+                        </div>
+                        <p class="text-slate-600 truncate font-medium">${escapeHtml(post.text)}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Like Button Functionality
+        function likePost(id) {
+            const post = cheerPosts.find(p => p.id === id);
+            if (post) {
+                post.likes += 1;
+                renderCheerPosts();
+            }
+        }
+
+        // Submit Cheer Post
+        function handleCheerSubmit(e) {
+            e.preventDefault();
+            const author = document.getElementById('cheerAuthor').value.trim();
+            const tag = document.getElementById('cheerTag').value;
+            const text = document.getElementById('cheerText').value.trim();
+
+            if (!author || !text) return;
+
+            const newPost = {
+                id: Date.now(),
+                author: author,
+                tag: tag,
+                text: text,
+                likes: 0
+            };
+
+            cheerPosts.unshift(newPost);
+            renderCheerPosts();
+
+            document.getElementById('cheerForm').reset();
+            openModal('응원 구름이 두둥실 떴어요 ☁️', '보내주신 온기 가득한 마음이 피해 친구와 교실 전체를 감싸 안아줍니다.', 'sky');
+        }
+
+        // Report Form Submission
+        function handleReportSubmit(e) {
+            e.preventDefault();
+            const content = document.getElementById('reportContent').value.trim();
+
+            if (!content) return;
+
+            document.getElementById('reportForm').reset();
+            document.getElementById('fileNameDisplay').textContent = '';
+
+            openModal(
+                '안전하게 시그널이 전송되었습니다 🛡️',
+                '보내주신 소중한 이야기는 100% 포근하게 암호화 보호되며, 상담 선생님이 안전하게 개입하실 예정입니다.',
+                'sky'
+            );
+        }
+
+        // Display File Name on Select
+        function showFileName(input) {
+            const display = document.getElementById('fileNameDisplay');
+            if (input.files && input.files[0]) {
+                display.textContent = `선택된 파일: ${input.files[0].name}`;
+            } else {
+                display.textContent = '';
+            }
+        }
+
+        // Quiz Calculation
+        function calculateQuiz() {
+            const q1 = document.querySelector('input[name="q1"]:checked');
+            const q2 = document.querySelector('input[name="q2"]:checked');
+
+            if (!q1 || !q2) {
+                alert('모든 문항에 답변해 주세요.');
+                return;
+            }
+
+            const score = parseInt(q1.value) + parseInt(q2.value);
+            const resultBox = document.getElementById('quizResult');
+            const title = document.getElementById('resultTitle');
+            const desc = document.getElementById('resultDesc');
+
+            resultBox.classList.remove('hidden');
+
+            if (score >= 5) {
+                title.textContent = "☁️ 맑고 포근한 '구름 수호자'";
+                desc.textContent = "당신은 은밀한 언어폭력에 굴하지 않고 따뜻하게 감싸 안을 줄 아는 멋진 친구입니다!";
+            } else if (score >= 3) {
+                title.textContent = "🌱 용기를 품은 '잠재적 지킴이'";
+                desc.textContent = "두려워 말 망설였지만 괜찮아요. 시그널 클린룸의 익명 보호망을 통해 언제든 첫걸음을 내딛어 보세요.";
+            } else {
+                title.textContent = "⚠️ 마음 온도 충전 필요";
+                desc.textContent = "장난처럼 던진 말이나 침묵이 친구에겐 비구름이 될 수 있어요. 서로를 존중하는 다정한 시선을 연습해보아요.";
+            }
+        }
+
+        // Custom Modal Control
+        function openModal(title, message, themeColor = 'sky') {
+            const modal = document.getElementById('customModal');
+            const titleEl = document.getElementById('modalTitle');
+            const msgEl = document.getElementById('modalMessage');
+            const iconContainer = document.getElementById('modalIcon');
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+
+            iconContainer.className = 'w-14 h-14 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center text-2xl mx-auto shadow-sm';
+            iconContainer.innerHTML = '<i class="fa-solid fa-cloud-sun"></i>';
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('customModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Helper to escape HTML characters
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+
+        // Initialize App
+        window.onload = function() {
+            renderCheerPosts();
+        };
+    </script>
+</body>
+</html>
